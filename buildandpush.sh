@@ -26,11 +26,11 @@ fi
 
 # Authenticate Docker to DockerHub
 echo "Authenticating Docker to DockerHub..."
-echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --password-stdin
+echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --password-stdin || { echo "DockerHub login failed"; exit 1; }
 
 # Authenticate Docker to ECR
 echo "Authenticating Docker to ECR..."
-aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_REGION.amazonaws.com
+aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_REGION.amazonaws.com || { echo "ECR login failed"; exit 1; }
 
 # Enable Docker Buildx (if not already enabled)
 echo "Enabling Docker Buildx..."
@@ -38,8 +38,8 @@ docker buildx create --use
 
 # Build multi-architecture Docker images and push to registry
 echo "Building and pushing multi-architecture Docker images..."
-docker buildx build --platform $ARCHITECTURES -t $GAME_IMAGE_NAME:latest ./game --push --progress=plain
-docker buildx build --platform $ARCHITECTURES -t $WEBAPP_IMAGE_NAME:latest ./webapp --push --progress=plain
+docker buildx build --platform $ARCHITECTURES -t $GAME_IMAGE_NAME:latest ./game --push --progress=plain || { echo "Failed to build and push game-image"; exit 1; }
+docker buildx build --platform $ARCHITECTURES -t $WEBAPP_IMAGE_NAME:latest ./webapp --push --progress=plain || { echo "Failed to build and push webapp-image"; exit 1; }
 
 # Verify if the images are pushed
 echo "Listing Docker images in the registry..."
