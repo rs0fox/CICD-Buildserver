@@ -23,25 +23,9 @@ if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_PASSWORD" ]; then
   exit 1
 fi
 
-# Create Docker config file for authentication
-DOCKER_CONFIG_FILE=$(mktemp)
-cat <<EOF > $DOCKER_CONFIG_FILE
-{
-  "auths": {
-    "https://index.docker.io/v1/": {
-      "username": "$DOCKERHUB_USERNAME",
-      "password": "$DOCKERHUB_PASSWORD"
-    }
-  }
-}
-EOF
-
-# Export Docker config
-export DOCKER_CONFIG=$DOCKER_CONFIG_FILE
-
 # Authenticate Docker to DockerHub
 echo "Authenticating Docker to DockerHub..."
-docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --password-stdin
 
 # Authenticate Docker to ECR
 echo "Authenticating Docker to ECR..."
@@ -61,8 +45,5 @@ docker tag $WEBAPP_IMAGE_NAME:latest $(aws sts get-caller-identity --query 'Acco
 echo "Pushing Docker images to ECR..."
 docker push $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_GAME:$TAG
 docker push $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_WEBAPP:$TAG
-
-# Clean up
-rm -f $DOCKER_CONFIG_FILE
 
 echo "Docker images have been pushed to ECR successfully."
