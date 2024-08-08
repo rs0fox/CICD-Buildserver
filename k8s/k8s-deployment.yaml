@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game
+  template:
+    metadata:
+      labels:
+        app: game
+    spec:
+      containers:
+      - name: game-container
+        image: your_docker_image
+        ports:
+        - containerPort: 80
+      - name: db-container
+        image: postgres:latest
+        env:
+        - name: POSTGRES_DB
+          value: "yourdatabase"
+        - name: POSTGRES_USER
+          value: "youruser"
+        - name: POSTGRES_PASSWORD
+          value: "yourpassword"
+        ports:
+        - containerPort: 5432
