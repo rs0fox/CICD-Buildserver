@@ -9,7 +9,7 @@ ECR_REPO_WEBAPP="builddb-webapp"
 GAME_IMAGE_NAME="game-image"
 WEBAPP_IMAGE_NAME="webapp-image"
 TAG="latest"
-SECRETS_ID="arn:aws:secretsmanager:ap-south-1:339712721384:secret:dockerhub-G8QpL5"  # Your Secrets Manager secret ARN
+SECRETS_ID="arn:aws:secretsmanager:ap-south-1:339712721384:secret:dockerhub-G8QpL5"  # Correct ARN
 
 # Retrieve DockerHub credentials from AWS Secrets Manager
 echo "Retrieving DockerHub credentials from AWS Secrets Manager..."
@@ -23,7 +23,7 @@ if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_PASSWORD" ]; then
   exit 1
 fi
 
-# Create a Docker config file for authentication
+# Create Docker config file for authentication
 DOCKER_CONFIG_FILE=$(mktemp)
 cat <<EOF > $DOCKER_CONFIG_FILE
 {
@@ -36,9 +36,11 @@ cat <<EOF > $DOCKER_CONFIG_FILE
 }
 EOF
 
+# Export Docker config
+export DOCKER_CONFIG=$DOCKER_CONFIG_FILE
+
 # Authenticate Docker to DockerHub
 echo "Authenticating Docker to DockerHub..."
-export DOCKER_CONFIG=$DOCKER_CONFIG_FILE
 docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
 
 # Authenticate Docker to ECR
