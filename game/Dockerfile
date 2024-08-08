@@ -1,6 +1,6 @@
 # Dockerfile for ARM64 architecture
 # Use the appropriate base image for ARM64
-FROM python:3.11-slim-arm64
+FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app

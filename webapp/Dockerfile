@@ -1,6 +1,5 @@
 # Dockerfile for ARM64 architecture
-# Use the ARM64 base image for Python
-FROM python:3.9-slim-arm64
+FROM python:3.11-slim
 
 WORKDIR /app
 
