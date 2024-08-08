@@ -10,8 +10,8 @@ phases:
   pre_build:
     commands:
       - echo "Retrieving DockerHub credentials from AWS Secrets Manager..."
-      - export DOCKERHUB_USERNAME=$(aws secretsmanager get-secret-value --secret-id your-dockerhub-secret-id --query SecretString --output text | jq -r .username)
-      - export DOCKERHUB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id your-dockerhub-secret-id --query SecretString --output text | jq -r .password)
+      - export DOCKERHUB_USERNAME=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:ap-south-1:339712721384:secret:dockerhub-G8QpL5 --query SecretString --output text | jq -r .username)
+      - export DOCKERHUB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:ap-south-1:339712721384:secret:dockerhub-G8QpL5 --query SecretString --output text | jq -r .password)
       - echo "Logging in to DockerHub..."
       - echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --password-stdin
   build:
