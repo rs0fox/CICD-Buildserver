@@ -5,14 +5,28 @@ phases:
     runtime-versions:
       python: 3.9
     commands:
+      - echo "Installing dependencies..."
       - pip install pyinstaller
+  pre_build:
+    commands:
+      - echo "Retrieving DockerHub credentials from AWS Secrets Manager..."
+      - export DOCKERHUB_USERNAME=$(aws secretsmanager get-secret-value --secret-id your-dockerhub-secret-id --query SecretString --output text | jq -r .username)
+      - export DOCKERHUB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id your-dockerhub-secret-id --query SecretString --output text | jq -r .password)
+      - echo "Logging in to DockerHub..."
+      - echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --password-stdin
   build:
     commands:
+      - echo "Building the game executable..."
       - cd game
       - pyinstaller --onefile game.py
+      - cd ..
+      - echo "Running build and push script..."
+      - chmod +x buildandpush.sh
+      - ./buildandpush.sh
   post_build:
     commands:
-      - aws s3 cp dist/game s3://yourbucket/game
+      - echo "Uploading game executable to S3..."
+      - aws s3 cp game/dist/game s3://builddb/game
 
 artifacts:
   files:
