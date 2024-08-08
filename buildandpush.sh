@@ -9,13 +9,19 @@ ECR_REPO_WEBAPP="builddb-webapp"
 GAME_IMAGE_NAME="game-image"
 WEBAPP_IMAGE_NAME="webapp-image"
 TAG="latest"
-SECRETS_ID="arn:aws:secretsmanager:ap-south-1:339712721384:secret:dockerhub-G8QpL5"  # Replace with your Secrets Manager secret ARN
+SECRETS_ID="arn:aws:secretsmanager:ap-south-1:339712721384:secret:dockerhub-G8QpL5"  # Your Secrets Manager secret ARN
 
 # Retrieve DockerHub credentials from AWS Secrets Manager
 echo "Retrieving DockerHub credentials from AWS Secrets Manager..."
 DOCKERHUB_CREDENTIALS=$(aws secretsmanager get-secret-value --secret-id $SECRETS_ID --query SecretString --output text)
 DOCKERHUB_USERNAME=$(echo $DOCKERHUB_CREDENTIALS | jq -r .username)
 DOCKERHUB_PASSWORD=$(echo $DOCKERHUB_CREDENTIALS | jq -r .password)
+
+# Check if credentials are retrieved successfully
+if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_PASSWORD" ]; then
+  echo "Failed to retrieve DockerHub credentials from AWS Secrets Manager."
+  exit 1
+fi
 
 # Create a Docker config file for authentication
 DOCKER_CONFIG_FILE=$(mktemp)
