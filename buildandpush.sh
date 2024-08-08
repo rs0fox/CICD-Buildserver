@@ -36,14 +36,15 @@ aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --
 echo "Enabling Docker Buildx..."
 docker buildx create --use
 
-# Build multi-architecture Docker images
-echo "Building multi-architecture Docker images..."
-docker buildx build --platform $ARCHITECTURES -t $GAME_IMAGE_NAME:latest ./game --progress=plain
-docker buildx build --platform $ARCHITECTURES -t $WEBAPP_IMAGE_NAME:latest ./webapp --progress=plain
+# Build multi-architecture Docker images and push to registry
+echo "Building and pushing multi-architecture Docker images..."
+docker buildx build --platform $ARCHITECTURES -t $GAME_IMAGE_NAME:latest ./game --push --progress=plain
+docker buildx build --platform $ARCHITECTURES -t $WEBAPP_IMAGE_NAME:latest ./webapp --push --progress=plain
 
-# Verify if the images are built
-echo "Listing Docker images..."
-docker images
+# Verify if the images are pushed
+echo "Listing Docker images in the registry..."
+docker buildx imagetools inspect $GAME_IMAGE_NAME:latest
+docker buildx imagetools inspect $WEBAPP_IMAGE_NAME:latest
 
 # Tag the Docker images
 echo "Tagging Docker images..."
