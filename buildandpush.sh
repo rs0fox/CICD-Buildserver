@@ -10,6 +10,7 @@ GAME_IMAGE_NAME="game-image"
 WEBAPP_IMAGE_NAME="webapp-image"
 TAG="latest"
 SECRETS_ID="arn:aws:secretsmanager:ap-south-1:339712721384:secret:dockerhub-G8QpL5"  # Correct ARN
+ARCHITECTURES="linux/amd64,linux/arm64"
 
 # Retrieve DockerHub credentials from AWS Secrets Manager
 echo "Retrieving DockerHub credentials from AWS Secrets Manager..."
@@ -31,10 +32,14 @@ echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --passwor
 echo "Authenticating Docker to ECR..."
 aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_REGION.amazonaws.com
 
-# Build the Docker images
-echo "Building Docker images..."
-docker build -t $GAME_IMAGE_NAME:latest ./game
-docker build -t $WEBAPP_IMAGE_NAME:latest ./webapp
+# Enable Docker Buildx (if not already enabled)
+echo "Enabling Docker Buildx..."
+docker buildx create --use
+
+# Build multi-architecture Docker images
+echo "Building multi-architecture Docker images..."
+docker buildx build --platform $ARCHITECTURES -t $GAME_IMAGE_NAME:latest ./game
+docker buildx build --platform $ARCHITECTURES -t $WEBAPP_IMAGE_NAME:latest ./webapp
 
 # Tag the Docker images
 echo "Tagging Docker images..."
