@@ -38,8 +38,12 @@ docker buildx create --use
 
 # Build multi-architecture Docker images
 echo "Building multi-architecture Docker images..."
-docker buildx build --platform $ARCHITECTURES -t $GAME_IMAGE_NAME:latest ./game
-docker buildx build --platform $ARCHITECTURES -t $WEBAPP_IMAGE_NAME:latest ./webapp
+docker buildx build --platform $ARCHITECTURES -t $GAME_IMAGE_NAME:latest ./game --progress=plain
+docker buildx build --platform $ARCHITECTURES -t $WEBAPP_IMAGE_NAME:latest ./webapp --progress=plain
+
+# Verify if the images are built
+echo "Listing Docker images..."
+docker images
 
 # Tag the Docker images
 echo "Tagging Docker images..."
