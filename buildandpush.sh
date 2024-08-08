@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e  # Exit on any error
+set -x  # Enable debug mode
 
 # Set variables
 AWS_REGION="ap-south-1"
@@ -26,35 +27,25 @@ fi
 
 # Authenticate Docker to DockerHub
 echo "Authenticating Docker to DockerHub..."
-echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --password-stdin || { echo "DockerHub login failed"; exit 1; }
+echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --password-stdin
 
 # Authenticate Docker to ECR
 echo "Authenticating Docker to ECR..."
-aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_REGION.amazonaws.com || { echo "ECR login failed"; exit 1; }
+aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_REGION.amazonaws.com
 
 # Enable Docker Buildx (if not already enabled)
 echo "Enabling Docker Buildx..."
-docker buildx create --use
+docker buildx create --use || { echo "Failed to create Buildx builder"; exit 1; }
 
 # Build multi-architecture Docker images and push to registry
 echo "Building and pushing multi-architecture Docker images..."
 docker buildx build --platform $ARCHITECTURES -t $GAME_IMAGE_NAME:latest ./game --push --progress=plain || { echo "Failed to build and push game-image"; exit 1; }
 docker buildx build --platform $ARCHITECTURES -t $WEBAPP_IMAGE_NAME:latest ./webapp --push --progress=plain || { echo "Failed to build and push webapp-image"; exit 1; }
 
-# Verify if the images are pushed
-echo "Listing Docker images in the registry..."
-docker buildx imagetools inspect $GAME_IMAGE_NAME:latest
-docker buildx imagetools inspect $WEBAPP_IMAGE_NAME:latest
-
 # Tag the Docker images
 echo "Tagging Docker images..."
-docker tag $GAME_IMAGE_NAME:latest $DOCKERHUB_USERNAME/$GAME_IMAGE_NAME:latest || { echo "Failed to tag game-image"; exit 1; }
-docker tag $WEBAPP_IMAGE_NAME:latest $DOCKERHUB_USERNAME/$WEBAPP_IMAGE_NAME:latest || { echo "Failed to tag webapp-image"; exit 1; }
-
-# Push the Docker images to DockerHub
-echo "Pushing Docker images to DockerHub..."
-docker push $DOCKERHUB_USERNAME/$GAME_IMAGE_NAME:latest || { echo "Failed to push game-image"; exit 1; }
-docker push $DOCKERHUB_USERNAME/$WEBAPP_IMAGE_NAME:latest || { echo "Failed to push webapp-image"; exit 1; }
+docker tag $GAME_IMAGE_NAME:latest $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_GAME:$TAG
+docker tag $WEBAPP_IMAGE_NAME:latest $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_WEBAPP:$TAG
 
 # Push the Docker images to ECR
 echo "Pushing Docker images to ECR..."
