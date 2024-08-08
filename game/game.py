@@ -1,8 +1,12 @@
 import psycopg2
-import sys
+import os
 
 def get_username():
-    return input("Enter your username: ")
+    # Read username from environment variable
+    username = os.getenv("GAME_USERNAME")
+    if not username:
+        raise ValueError("No username provided. Set the GAME_USERNAME environment variable.")
+    return username
 
 def store_username(username):
     try:
@@ -24,9 +28,12 @@ def store_username(username):
             connection.close()
 
 def main():
-    username = get_username()
-    store_username(username)
-    print("Username stored successfully!")
+    try:
+        username = get_username()
+        store_username(username)
+        print("Username stored successfully!")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     main()
