@@ -7,6 +7,8 @@ phases:
     commands:
       - echo "Installing dependencies..."
       - pip install pyinstaller
+      - echo "Installing Docker Buildx..."
+      - docker buildx version || docker buildx create --use
   pre_build:
     commands:
       - echo "Retrieving DockerHub credentials from AWS Secrets Manager..."
