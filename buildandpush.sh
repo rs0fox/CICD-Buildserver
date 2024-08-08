@@ -48,8 +48,13 @@ docker buildx imagetools inspect $WEBAPP_IMAGE_NAME:latest
 
 # Tag the Docker images
 echo "Tagging Docker images..."
-docker tag $GAME_IMAGE_NAME:latest $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_GAME:$TAG
-docker tag $WEBAPP_IMAGE_NAME:latest $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_WEBAPP:$TAG
+docker tag $GAME_IMAGE_NAME:latest $DOCKERHUB_USERNAME/$GAME_IMAGE_NAME:latest || { echo "Failed to tag game-image"; exit 1; }
+docker tag $WEBAPP_IMAGE_NAME:latest $DOCKERHUB_USERNAME/$WEBAPP_IMAGE_NAME:latest || { echo "Failed to tag webapp-image"; exit 1; }
+
+# Push the Docker images to DockerHub
+echo "Pushing Docker images to DockerHub..."
+docker push $DOCKERHUB_USERNAME/$GAME_IMAGE_NAME:latest || { echo "Failed to push game-image"; exit 1; }
+docker push $DOCKERHUB_USERNAME/$WEBAPP_IMAGE_NAME:latest || { echo "Failed to push webapp-image"; exit 1; }
 
 # Push the Docker images to ECR
 echo "Pushing Docker images to ECR..."
