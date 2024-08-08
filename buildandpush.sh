@@ -9,7 +9,7 @@ DOCKERHUB_REPO_WEBAPP="builddb-webapp"
 GAME_IMAGE_NAME="game-image"
 WEBAPP_IMAGE_NAME="webapp-image"
 TAG="latest"
-SECRETS_ID="arn:aws:secretsmanager:ap-south-1:339712721384:secret:dockerhub-G8QpL5"  # Correct ARN
+SECRETS_ID="arn:aws:secretsmanager:ap-south-1:339712721384:secret:dockerhublogin-4vcmMW"  # Correct ARN
 ARCHITECTURES="linux/amd64,linux/arm64"
 
 # Retrieve DockerHub credentials from AWS Secrets Manager
