@@ -1,10 +1,16 @@
-FROM python:3.9-slim
+# Dockerfile for ARM64 architecture
+# Use the appropriate base image for ARM64
+FROM python:3.11-slim-arm64
 
+# Set working directory
 WORKDIR /app
 
+# Copy requirements and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY game.py .
+# Copy application code
+COPY . .
 
-CMD ["python", "game.py"]
+# Command to run the application
+CMD ["python", "app.py"]
